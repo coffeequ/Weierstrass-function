@@ -1,6 +1,6 @@
 # Project for visualisation Weierstrass function
 
-build project: manim -pql "name_file".py "name_class"
+build project: manim -pqh "name_file".py "name_class"
 
 ### Learn information
 Основным строительным блоком любоей сцены явялется `mobject`
