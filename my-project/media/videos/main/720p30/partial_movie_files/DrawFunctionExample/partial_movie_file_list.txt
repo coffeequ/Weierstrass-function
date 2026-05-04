@@ -1,0 +1,4 @@
+# This file is used internally by FFMPEG.
+file 'file:C:/Users/savva/Desktop/ВУЗ/2 Семестр/МатАнализ/my-project/media/videos/main/720p30/partial_movie_files/DrawFunctionExample/240685636_1925601869_223132457.mp4'
+file 'file:C:/Users/savva/Desktop/ВУЗ/2 Семестр/МатАнализ/my-project/media/videos/main/720p30/partial_movie_files/DrawFunctionExample/1973464001_2605101523_219020971.mp4'
+file 'file:C:/Users/savva/Desktop/ВУЗ/2 Семестр/МатАнализ/my-project/media/videos/main/720p30/partial_movie_files/DrawFunctionExample/1973464001_2408024828_3067192561.mp4'
