@@ -27,6 +27,8 @@ class DrawFunctionExample(MovingCameraScene):
         formula = MathTex(r"W(x)=\sum a^n \cos(b^n \pi x)")
         text = Text("Weierstrass function")
 
+        self.play(self.camera.frame.animate.scale(4))
+
         self.play(Write(text))
         self.play(ReplacementTransform(text, formula))
         self.wait(2)
@@ -66,7 +68,7 @@ class DrawFunctionExample(MovingCameraScene):
         )
 
         self.play(Transform(func, zoom_func), run_time=2)
-        self.wait()
+        self.wait(2)
 
         # --- ВТОРОЙ ЗУМ (чтобы стало очевидно) ---
         x1 = 0.52
