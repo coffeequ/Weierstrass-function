@@ -7,8 +7,8 @@ class DrawFunctionExample(MovingCameraScene):
         axes = Axes(
             x_range=[-3, 3, 1],
             y_range=[-3, 3, 1],
-            x_length=8,
-            y_length=5,
+            x_length=14,
+            y_length=8,
         )
 
         def weierstrass(x, a=0.5, b=7, n_terms=80):
@@ -23,7 +23,7 @@ class DrawFunctionExample(MovingCameraScene):
             use_smoothing=False
         )
 
-        labels = axes.get_axis_labels(x_label="x", y_label="W(x)")
+        labels = axes.get_axis_labels(x_label="x", y_label="y")
         formula = MathTex(r"W(x)=\sum a^n \cos(b^n \pi x)")
         text = Text("Weierstrass function")
 
