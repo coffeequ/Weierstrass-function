@@ -7,6 +7,7 @@ class DrawFunctionExample(MovingCameraScene):
         x0 = 0.52
         base_x_window = 6.0
         max_zoom = 32.0
+        max_x_stretch = 10.0
         max_terms = 260
         focus_y_terms = 160
 
@@ -21,6 +22,7 @@ class DrawFunctionExample(MovingCameraScene):
 
         a = 0.5
         b = 7
+        holder_exponent = -np.log(a) / np.log(b)
         term_numbers = np.arange(max_terms)
         amplitudes = a ** term_numbers
         frequencies = (b ** term_numbers) * np.pi
@@ -37,6 +39,7 @@ class DrawFunctionExample(MovingCameraScene):
             return values
 
         zoom = ValueTracker(1.0)
+        x_stretch = ValueTracker(1.0)
 
         def current_zoom():
             return zoom.get_value()
@@ -52,8 +55,17 @@ class DrawFunctionExample(MovingCameraScene):
             z = current_zoom()
             return int(np.clip(900 * np.sqrt(z), 900, 6500))
 
+        def current_y_gain():
+            return current_zoom() ** holder_exponent
+
+        def current_x_stretch():
+            return x_stretch.get_value()
+
+        def focus_y():
+            return weierstrass(x0, focus_y_terms)
+
         def center_point():
-            return axes.c2p(x0, weierstrass(x0, focus_y_terms))
+            return axes.c2p(x0, focus_y())
 
         def camera_scale():
             return self.camera.frame.get_width() / config.frame_width
@@ -63,11 +75,15 @@ class DrawFunctionExample(MovingCameraScene):
             x_min = x0 - window / 2
             x_max = x0 + window / 2
             xs = np.linspace(x_min, x_max, current_samples())
-            ys = weierstrass(xs, current_terms())
+            n_terms = current_terms()
+            y_anchor = weierstrass(x0, n_terms)
+            ys = weierstrass(xs, n_terms)
+            display_xs = x0 + (xs - x0) * current_x_stretch()
+            display_ys = focus_y() + (ys - y_anchor) * current_y_gain()
 
             graph = VMobject()
             graph.set_points_as_corners(
-                [axes.c2p(x, y) for x, y in zip(xs, ys)]
+                [axes.c2p(x, y) for x, y in zip(display_xs, display_ys)]
             )
             graph.set_stroke(BLUE_C, width=2.4)
             return graph
@@ -77,6 +93,12 @@ class DrawFunctionExample(MovingCameraScene):
             info = VGroup(
                 Text("scale", font_size=24),
                 DecimalNumber(current_zoom(), num_decimal_places=1, font_size=24),
+                Text("x", font_size=24),
+                Text("width", font_size=24),
+                DecimalNumber(current_x_stretch(), num_decimal_places=1, font_size=24),
+                Text("x", font_size=24),
+                Text("height", font_size=24),
+                DecimalNumber(current_y_gain(), num_decimal_places=1, font_size=24),
                 Text("x", font_size=24),
                 Text("terms", font_size=24),
                 Integer(current_terms(), font_size=24),
@@ -132,10 +154,18 @@ class DrawFunctionExample(MovingCameraScene):
         self.wait(1)
 
         self.play(
-            self.camera.frame.animate.move_to(center_point()).scale(0.42),
-            zoom.animate.set_value(4),
+            self.camera.frame.animate.move_to(center_point()).scale(0.62),
+            zoom.animate.set_value(2.2),
+            x_stretch.animate.set_value(max_x_stretch),
             focus_window.animate.set_opacity(0.25),
-            run_time=4,
+            run_time=2.2,
+            rate_func=rush_into,
+        )
+
+        self.play(
+            self.camera.frame.animate.move_to(center_point()).scale(0.68),
+            zoom.animate.set_value(4),
+            run_time=1.8,
             rate_func=smooth,
         )
 
