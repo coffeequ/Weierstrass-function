@@ -6,7 +6,6 @@ class DrawFunctionExample(MovingCameraScene):
     def construct(self):
         x0 = 0.52
         base_x_window = 6.0
-        max_zoom = 32.0
         max_x_stretch = 10.0
         max_terms = 260
         focus_y_terms = 160
@@ -90,20 +89,21 @@ class DrawFunctionExample(MovingCameraScene):
 
         def make_zoom_info():
             scale = camera_scale()
+            font_size = 18
             info = VGroup(
-                Text("scale", font_size=24),
-                DecimalNumber(current_zoom(), num_decimal_places=1, font_size=24),
-                Text("x", font_size=24),
-                Text("width", font_size=24),
-                DecimalNumber(current_x_stretch(), num_decimal_places=1, font_size=24),
-                Text("x", font_size=24),
-                Text("height", font_size=24),
-                DecimalNumber(current_y_gain(), num_decimal_places=1, font_size=24),
-                Text("x", font_size=24),
-                Text("terms", font_size=24),
-                Integer(current_terms(), font_size=24),
+                Text("scale", font_size=font_size),
+                DecimalNumber(current_zoom(), num_decimal_places=1, font_size=font_size),
+                Text("x", font_size=font_size),
+                Text("width", font_size=font_size),
+                DecimalNumber(current_x_stretch(), num_decimal_places=1, font_size=font_size),
+                Text("x", font_size=font_size),
+                Text("height", font_size=font_size),
+                DecimalNumber(current_y_gain(), num_decimal_places=1, font_size=font_size),
+                Text("x", font_size=font_size),
+                Text("terms", font_size=font_size),
+                Integer(current_terms(), font_size=font_size),
             )
-            info.arrange(RIGHT, buff=0.1)
+            info.arrange(RIGHT, buff=0.08)
             info.scale(scale)
             info.move_to(
                 self.camera.frame.get_corner(UR)
@@ -169,6 +169,9 @@ class DrawFunctionExample(MovingCameraScene):
             rate_func=smooth,
         )
 
+        graph.clear_updaters()
+        graph.become(make_fractal_graph())
+
         self.play(
             FadeOut(focus_window),
             axes.animate.set_opacity(0.35),
@@ -178,7 +181,6 @@ class DrawFunctionExample(MovingCameraScene):
 
         self.play(
             self.camera.frame.animate.move_to(center_point()).scale(0.27),
-            zoom.animate.set_value(max_zoom),
             run_time=9,
             rate_func=smooth,
         )
