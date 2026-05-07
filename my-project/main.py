@@ -1,13 +1,15 @@
 from manim import *
 import numpy as np
 
+config.frame_rate = 30
+
 
 class DrawFunctionExample(MovingCameraScene):
     def construct(self):
         x0 = 0.52
         base_x_window = 6.0
-        max_x_stretch = 10.0
-        second_x_stretch = 16.0
+        max_x_stretch = 7.0
+        second_x_stretch = 11.0
         max_terms = 260
         graph_samples = 8000
         smoothing_kernel = np.array([1, 2, 3, 4, 3, 2, 1], dtype=float)
@@ -47,9 +49,6 @@ class DrawFunctionExample(MovingCameraScene):
         def current_zoom():
             return zoom.get_value()
 
-        def current_x_window():
-            return base_x_window / current_zoom()
-
         def current_terms():
             return max_terms
 
@@ -63,11 +62,14 @@ class DrawFunctionExample(MovingCameraScene):
             return x_stretch.get_value()
 
         def focus_blend():
-            t = float(np.clip((current_zoom() - 1) / 1.2, 0, 1))
-            return t * t * (3 - 2 * t)
+            return extra_smooth((current_zoom() - 1) / 3)
 
         def focus_y():
             return weierstrass(x0, focus_y_terms)
+
+        def extra_smooth(t):
+            t = np.clip(t, 0, 1)
+            return t * t * t * (t * (t * 6 - 15) + 10)
 
         def center_point():
             return axes.c2p(x0, focus_y())
@@ -82,10 +84,8 @@ class DrawFunctionExample(MovingCameraScene):
 
         def make_fractal_graph():
             blend = focus_blend()
-            window = current_x_window()
-            graph_center = x0 * blend
-            x_min = graph_center - window / 2
-            x_max = graph_center + window / 2
+            x_min = -base_x_window / 2
+            x_max = base_x_window / 2
             xs = np.linspace(x_min, x_max, current_samples())
             n_terms = current_terms()
             y_anchor = weierstrass(x0, n_terms)
@@ -158,8 +158,8 @@ class DrawFunctionExample(MovingCameraScene):
             zoom.animate.set_value(2.2),
             x_stretch.animate.set_value(max_x_stretch),
             focus_window.animate.set_opacity(0.25),
-            run_time=3.4,
-            rate_func=rush_into,
+            run_time=4.5,
+            rate_func=extra_smooth,
         )
 
         freeze_graph()
@@ -170,8 +170,8 @@ class DrawFunctionExample(MovingCameraScene):
             self.camera.frame.animate.move_to(center_point()).scale(0.68),
             zoom.animate.set_value(4),
             x_stretch.animate.set_value(second_x_stretch),
-            run_time=2.8,
-            rate_func=rush_into,
+            run_time=4,
+            rate_func=extra_smooth,
         )
 
         freeze_graph()
