@@ -17,7 +17,7 @@ class DrawFunctionExample(MovingCameraScene):
             y_length=6,
             tips=False,
         )
-        labels = axes.get_axis_labels(x_label="x", y_label="W(x)")
+        labels = axes.get_axis_labels(x_label="x", y_label="y")
 
         a = 0.5
         b = 7
@@ -81,36 +81,11 @@ class DrawFunctionExample(MovingCameraScene):
             display_ys = focus_y() + (ys - y_anchor) * current_y_gain()
 
             graph = VMobject()
-            graph.set_points_as_corners(
+            graph.set_points_smoothly(
                 [axes.c2p(x, y) for x, y in zip(display_xs, display_ys)]
             )
             graph.set_stroke(BLUE_C, width=2.4)
             return graph
-
-        def make_zoom_info():
-            scale = camera_scale()
-            font_size = 18
-            info = VGroup(
-                Text("scale", font_size=font_size),
-                DecimalNumber(current_zoom(), num_decimal_places=1, font_size=font_size),
-                Text("x", font_size=font_size),
-                Text("width", font_size=font_size),
-                DecimalNumber(current_x_stretch(), num_decimal_places=1, font_size=font_size),
-                Text("x", font_size=font_size),
-                Text("height", font_size=font_size),
-                DecimalNumber(current_y_gain(), num_decimal_places=1, font_size=font_size),
-                Text("x", font_size=font_size),
-                Text("terms", font_size=font_size),
-                Integer(current_terms(), font_size=font_size),
-            )
-            info.arrange(RIGHT, buff=0.08)
-            info.scale(scale)
-            info.move_to(
-                self.camera.frame.get_corner(UR)
-                + LEFT * (info.width / 2 + 0.22 * scale)
-                + DOWN * (info.height / 2 + 0.22 * scale)
-            )
-            return info
 
         def make_focus_ring():
             scale = camera_scale()
@@ -142,10 +117,11 @@ class DrawFunctionExample(MovingCameraScene):
         )
         focus_ring = always_redraw(make_focus_ring)
         focus_window = make_focus_window()
-        zoom_info = always_redraw(make_zoom_info)
 
         formula = MathTex(r"W(x)=\sum_{n=0}^{\infty} a^n\cos(b^n\pi x)")
-        title = Text("Weierstrass function")
+        title = Text("Функция Вейерштрассе", font="Times New Roman")
+
+        self.camera.frame.scale(4)
 
         self.play(Write(title))
         self.play(ReplacementTransform(title, formula))
@@ -157,7 +133,6 @@ class DrawFunctionExample(MovingCameraScene):
         self.play(Create(axes), Write(labels))
         self.play(Create(graph), run_time=2.2, rate_func=smooth)
         self.play(FadeIn(dot), Create(focus_ring), Create(focus_window), run_time=1)
-        self.play(FadeIn(zoom_info), run_time=0.6)
         self.wait(1)
 
         self.play(
