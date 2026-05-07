@@ -95,12 +95,6 @@ class DrawFunctionExample(MovingCameraScene):
             graph.set_stroke(BLUE_C, width=2.4)
             return graph
 
-        def make_focus_ring():
-            scale = camera_scale()
-            ring = Circle(radius=0.17 * scale, color=YELLOW, stroke_width=3)
-            ring.move_to(center_point())
-            return ring
-
         def make_focus_window():
             scale = camera_scale()
             window = Rectangle(
@@ -123,7 +117,6 @@ class DrawFunctionExample(MovingCameraScene):
         dot = always_redraw(
             lambda: Dot(center_point(), color=YELLOW, radius=0.04 * camera_scale())
         )
-        focus_ring = always_redraw(make_focus_ring)
         focus_window = make_focus_window()
 
         formula = MathTex(r"W(x)=\sum_{n=0}^{\infty} a^n\cos(b^n\pi x)")
@@ -143,7 +136,7 @@ class DrawFunctionExample(MovingCameraScene):
 
         self.play(Create(axes), Write(labels))
         self.play(Create(graph), run_time=2.2, rate_func=smooth)
-        self.play(FadeIn(dot), Create(focus_ring), Create(focus_window), run_time=1)
+        self.play(FadeIn(dot), Create(focus_window), run_time=1)
         self.wait(1)
 
         self.play(
@@ -173,7 +166,6 @@ class DrawFunctionExample(MovingCameraScene):
         self.play(
             FadeOut(focus_window),
             FadeOut(dot),
-            FadeOut(focus_ring),
             axes.animate.set_opacity(0.35),
             labels.animate.set_opacity(0.35),
             run_time=1,
