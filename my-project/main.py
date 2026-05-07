@@ -129,6 +129,13 @@ class DrawFunctionExample(MovingCameraScene):
             window.move_to(center_point())
             return window
 
+        def freeze_graph():
+            graph.clear_updaters()
+            graph.become(make_fractal_graph())
+
+        def resume_graph():
+            graph.add_updater(lambda mob: mob.become(make_fractal_graph()))
+
         graph = always_redraw(make_fractal_graph)
         dot = always_redraw(
             lambda: Dot(center_point(), color=YELLOW, radius=0.04 * camera_scale())
@@ -162,6 +169,10 @@ class DrawFunctionExample(MovingCameraScene):
             rate_func=rush_into,
         )
 
+        freeze_graph()
+        self.wait(0.8)
+        resume_graph()
+
         self.play(
             self.camera.frame.animate.move_to(center_point()).scale(0.68),
             zoom.animate.set_value(4),
@@ -169,20 +180,18 @@ class DrawFunctionExample(MovingCameraScene):
             rate_func=smooth,
         )
 
-        graph.clear_updaters()
-        graph.become(make_fractal_graph())
+        freeze_graph()
+        self.wait(0.8)
+        resume_graph()
 
         self.play(
             FadeOut(focus_window),
+            FadeOut(dot),
+            FadeOut(focus_ring),
             axes.animate.set_opacity(0.35),
             labels.animate.set_opacity(0.35),
             run_time=1,
         )
 
-        self.play(
-            self.camera.frame.animate.move_to(center_point()).scale(0.27),
-            run_time=9,
-            rate_func=smooth,
-        )
-
+        freeze_graph()
         self.wait(2)
