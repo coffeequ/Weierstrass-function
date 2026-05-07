@@ -150,7 +150,7 @@ class DrawFunctionExample(MovingCameraScene):
             zoom.animate.set_value(2.2),
             x_stretch.animate.set_value(max_x_stretch),
             focus_window.animate.set_opacity(0.25),
-            run_time=2.2,
+            run_time=3.4,
             rate_func=rush_into,
         )
 
@@ -161,7 +161,7 @@ class DrawFunctionExample(MovingCameraScene):
         self.play(
             self.camera.frame.animate.move_to(center_point()).scale(0.68),
             zoom.animate.set_value(4),
-            run_time=1.8,
+            run_time=2.8,
             rate_func=smooth,
         )
 
