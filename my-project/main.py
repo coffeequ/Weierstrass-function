@@ -4,7 +4,7 @@ import numpy as np
 
 class DrawFunctionExample(MovingCameraScene):
     def construct(self):
-        x0 = 0.0
+        x0 = 0.52
         base_x_window = 6.0
         max_x_stretch = 10.0
         max_terms = 260
@@ -60,6 +60,9 @@ class DrawFunctionExample(MovingCameraScene):
         def current_x_stretch():
             return x_stretch.get_value()
 
+        def focus_blend():
+            return float(np.clip((current_zoom() - 1) / 1.2, 0, 1))
+
         def focus_y():
             return weierstrass(x0, focus_y_terms)
 
@@ -70,15 +73,19 @@ class DrawFunctionExample(MovingCameraScene):
             return self.camera.frame.get_width() / config.frame_width
 
         def make_fractal_graph():
+            blend = focus_blend()
             window = current_x_window()
-            x_min = x0 - window / 2
-            x_max = x0 + window / 2
+            graph_center = x0 * blend
+            x_min = graph_center - window / 2
+            x_max = graph_center + window / 2
             xs = np.linspace(x_min, x_max, current_samples())
             n_terms = current_terms()
             y_anchor = weierstrass(x0, n_terms)
             ys = weierstrass(xs, n_terms)
-            display_xs = x0 + (xs - x0) * current_x_stretch()
-            display_ys = focus_y() + (ys - y_anchor) * current_y_gain()
+            zoom_xs = x0 + (xs - x0) * current_x_stretch()
+            zoom_ys = focus_y() + (ys - y_anchor) * current_y_gain()
+            display_xs = (1 - blend) * xs + blend * zoom_xs
+            display_ys = (1 - blend) * ys + blend * zoom_ys
 
             graph = VMobject()
             graph.set_points_smoothly(
