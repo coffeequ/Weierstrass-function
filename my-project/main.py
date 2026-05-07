@@ -7,7 +7,11 @@ class DrawFunctionExample(MovingCameraScene):
         x0 = 0.52
         base_x_window = 6.0
         max_x_stretch = 10.0
+        second_x_stretch = 16.0
         max_terms = 260
+        graph_samples = 8000
+        smoothing_kernel = np.array([1, 2, 3, 4, 3, 2, 1], dtype=float)
+        smoothing_kernel /= smoothing_kernel.sum()
         focus_y_terms = 160
 
         axes = Axes(
@@ -47,12 +51,10 @@ class DrawFunctionExample(MovingCameraScene):
             return base_x_window / current_zoom()
 
         def current_terms():
-            z = current_zoom()
-            return int(np.clip(35 + 42 * np.log2(z + 1), 35, max_terms))
+            return max_terms
 
         def current_samples():
-            z = current_zoom()
-            return int(np.clip(900 * np.sqrt(z), 900, 6500))
+            return graph_samples
 
         def current_y_gain():
             return current_zoom() ** holder_exponent
@@ -61,7 +63,8 @@ class DrawFunctionExample(MovingCameraScene):
             return x_stretch.get_value()
 
         def focus_blend():
-            return float(np.clip((current_zoom() - 1) / 1.2, 0, 1))
+            t = float(np.clip((current_zoom() - 1) / 1.2, 0, 1))
+            return t * t * (3 - 2 * t)
 
         def focus_y():
             return weierstrass(x0, focus_y_terms)
@@ -71,6 +74,11 @@ class DrawFunctionExample(MovingCameraScene):
 
         def camera_scale():
             return self.camera.frame.get_width() / config.frame_width
+
+        def smooth_values(values):
+            padding = len(smoothing_kernel) // 2
+            padded = np.pad(values, padding, mode="edge")
+            return np.convolve(padded, smoothing_kernel, mode="valid")
 
         def make_fractal_graph():
             blend = focus_blend()
@@ -86,6 +94,7 @@ class DrawFunctionExample(MovingCameraScene):
             zoom_ys = focus_y() + (ys - y_anchor) * current_y_gain()
             display_xs = (1 - blend) * xs + blend * zoom_xs
             display_ys = (1 - blend) * ys + blend * zoom_ys
+            display_ys = smooth_values(display_ys)
 
             graph = VMobject()
             graph.set_points_smoothly(
@@ -102,9 +111,8 @@ class DrawFunctionExample(MovingCameraScene):
 
         def make_focus_window():
             scale = camera_scale()
-            window = Rectangle(
-                width=2.2 * scale,
-                height=1.2 * scale,
+            window = Circle(
+                radius=0.85 * scale,
                 color=YELLOW,
                 stroke_width=2,
             )
@@ -131,7 +139,7 @@ class DrawFunctionExample(MovingCameraScene):
             font="Times New Roman",
         )
 
-        self.camera.frame.scale(4)
+        self.camera.frame.scale(3)
 
         self.play(Write(title))
         self.play(ReplacementTransform(title, formula))
@@ -142,7 +150,7 @@ class DrawFunctionExample(MovingCameraScene):
 
         self.play(Create(axes), Write(labels))
         self.play(Create(graph), run_time=2.2, rate_func=smooth)
-        self.play(FadeIn(dot), Create(focus_ring), Create(focus_window), run_time=1)
+        self.play(FadeIn(dot), Create(focus_window), run_time=1)
         self.wait(1)
 
         self.play(
@@ -161,8 +169,9 @@ class DrawFunctionExample(MovingCameraScene):
         self.play(
             self.camera.frame.animate.move_to(center_point()).scale(0.68),
             zoom.animate.set_value(4),
+            x_stretch.animate.set_value(second_x_stretch),
             run_time=2.8,
-            rate_func=smooth,
+            rate_func=rush_into,
         )
 
         freeze_graph()
@@ -172,7 +181,6 @@ class DrawFunctionExample(MovingCameraScene):
         self.play(
             FadeOut(focus_window),
             FadeOut(dot),
-            FadeOut(focus_ring),
             axes.animate.set_opacity(0.35),
             labels.animate.set_opacity(0.35),
             run_time=1,
