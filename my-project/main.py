@@ -1,6 +1,7 @@
 from manim import *
 import numpy as np
 
+config.frame_rate = 30
 
 class DrawFunctionExample(MovingCameraScene):
     def construct(self):
