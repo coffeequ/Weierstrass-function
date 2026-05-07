@@ -4,7 +4,7 @@ import numpy as np
 
 class DrawFunctionExample(MovingCameraScene):
     def construct(self):
-        x0 = 0.52
+        x0 = 0.0
         base_x_window = 6.0
         max_x_stretch = 10.0
         max_terms = 260
@@ -119,7 +119,10 @@ class DrawFunctionExample(MovingCameraScene):
         focus_window = make_focus_window()
 
         formula = MathTex(r"W(x)=\sum_{n=0}^{\infty} a^n\cos(b^n\pi x)")
-        title = Text("Функция Вейерштрассе", font="Times New Roman")
+        title = Text(
+            "\u0424\u0443\u043d\u043a\u0446\u0438\u044f \u0412\u0435\u0439\u0435\u0440\u0448\u0442\u0440\u0430\u0441\u0441\u0430",
+            font="Times New Roman",
+        )
 
         self.camera.frame.scale(4)
 
@@ -145,7 +148,7 @@ class DrawFunctionExample(MovingCameraScene):
         )
 
         freeze_graph()
-        self.wait(0.8)
+        self.wait(1.5)
         resume_graph()
 
         self.play(
@@ -156,7 +159,7 @@ class DrawFunctionExample(MovingCameraScene):
         )
 
         freeze_graph()
-        self.wait(0.8)
+        self.wait(1.5)
         resume_graph()
 
         self.play(
