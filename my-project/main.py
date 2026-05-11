@@ -10,7 +10,6 @@ class CreateCircle(Scene):
                 for n in range(n_terms)
             )
 
-        # --- ИСХОДНЫЕ ОСИ ---
         axes = Axes(
             x_range=[-3, 3, 1],
             y_range=[-3, 3, 1],
@@ -23,7 +22,6 @@ class CreateCircle(Scene):
         self.play(Create(axes), Create(func))
         self.wait()
 
-        # --- ОБЛАСТЬ ДЛЯ ЗУМА ---
         x0 = 0.5
         zoom_width = 0.5
 
@@ -31,7 +29,6 @@ class CreateCircle(Scene):
         square.move_to(axes.c2p(x0, weierstrass(x0)))
         self.play(FadeIn(square))
 
-        # --- ПРИБЛИЖЕНИЕ К КВАДРАТУ ---
         self.play(
             self.camera.frame.animate.scale(0.4).move_to(square),
             run_time=2
@@ -39,7 +36,6 @@ class CreateCircle(Scene):
 
         self.wait()
 
-        # --- ЗАТЕМНЕНИЕ ---
         fade_rect = Rectangle(
             width=config.frame_width,
             height=config.frame_height,
@@ -50,7 +46,6 @@ class CreateCircle(Scene):
 
         self.play(fade_rect.animate.set_opacity(1), run_time=1)
 
-        # --- НОВЫЕ ОСИ (ЗУМ ВНУТРЬ) ---
         new_axes = Axes(
             x_range=[x0 - zoom_width, x0 + zoom_width, 0.1],
             y_range=[-2, 2, 0.5],
@@ -64,16 +59,12 @@ class CreateCircle(Scene):
             use_smoothing=False
         )
 
-        # Удаляем старое
         self.remove(axes, func, square)
 
-        # Сбрасываем камеру
         self.camera.frame.move_to(ORIGIN).scale(1)
 
-        # Добавляем новое
         self.add(new_axes, new_func)
 
-        # --- УБИРАЕМ ЗАТЕМНЕНИЕ ---
         self.play(fade_rect.animate.set_opacity(0), run_time=1)
 
         self.wait(2)
