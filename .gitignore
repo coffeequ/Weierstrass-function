@@ -1,4 +1,4 @@
-.mp4
-*.svg
-*.tex
+*.mp4
 *.png
+my-project/media
+my-project/__pycache__

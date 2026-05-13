@@ -1,2 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:C:/Users/savva/Desktop/ВУЗ/2 Семестр/МатАнализ/my-project/media/videos/main/480p15/partial_movie_files/CreateCircle/3342089908_3881819781_223132457.mp4'
