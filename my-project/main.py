@@ -138,13 +138,45 @@ class DrawFunctionExample(MovingCameraScene):
             "\u0424\u0443\u043d\u043a\u0446\u0438\u044f \u0412\u0435\u0439\u0435\u0440\u0448\u0442\u0440\u0430\u0441\u0441\u0430",
             font="Times New Roman",
         )
+        properties_title = Text(
+            "Основные свойства",
+            font="Times New Roman",
+            font_size=46,
+        )
+        property_texts = [
+            "Непрерывна в каждой точке числовой прямой,\n"
+            "но график похож на бесконечный зубчатый зигзаг.",
+            "Не имеет конечной производной ни в одной точке.",
+            "Имеет фрактальную структуру: при увеличении масштаба\n"
+            "мелкие детали повторяют характер всего графика.",
+            "Задается рядом при 0 < a < 1, нечетном натуральном b\n"
+            "и условии ab > 1 + 3pi/2.",
+        ]
+        properties = VGroup(
+            *[
+                Text(f"- {text}", font="Times New Roman", font_size=32)
+                for text in property_texts
+            ]
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.35)
+        properties.scale_to_fit_width(config.frame_width * 1.6)
 
         self.camera.frame.scale(3)
 
         self.play(Write(title))
         self.play(ReplacementTransform(title, formula))
         self.wait(1)
-        self.play(FadeOut(formula))
+        self.play(formula.animate.scale(0.72).to_edge(UP))
+        properties_title.next_to(formula, DOWN, buff=0.45)
+        properties.next_to(properties_title, DOWN, buff=0.35)
+        VGroup(properties_title, properties).move_to(
+            [formula.get_center()[0], VGroup(properties_title, properties).get_center()[1], 0]
+        )
+        self.play(FadeIn(properties_title, shift=DOWN * 0.2), run_time=0.8)
+        for property_line in properties:
+            self.play(FadeIn(property_line, shift=RIGHT * 0.25), run_time=0.8)
+            self.wait(2.6)
+        self.wait(1)
+        self.play(FadeOut(VGroup(formula, properties_title, properties)))
 
         self.camera.frame.scale(1.08)
 
