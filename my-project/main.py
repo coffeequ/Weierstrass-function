@@ -10,10 +10,10 @@ class DrawFunctionExample(MovingCameraScene):
         base_x_window = 6.0
         max_x_stretch = 7.0
         second_x_stretch = 11.0
-        max_terms = 90
-        graph_samples = 3200
+        max_terms = 140
+        graph_samples = 3600
         smoothing_kernel = np.array(
-            [1, 2, 4, 7, 11, 15, 18, 15, 11, 7, 4, 2, 1],
+            [1, 2, 3, 5, 7, 5, 3, 2, 1],
             dtype=float,
         )
         smoothing_kernel /= smoothing_kernel.sum()
@@ -66,7 +66,7 @@ class DrawFunctionExample(MovingCameraScene):
             return x_stretch.get_value()
 
         def focus_blend():
-            return extra_smooth(extra_smooth((current_zoom() - 1) / 3))
+            return extra_smooth(extra_smooth(extra_smooth((current_zoom() - 1) / 3)))
 
         def focus_y():
             return weierstrass(x0, focus_y_terms)
@@ -107,7 +107,7 @@ class DrawFunctionExample(MovingCameraScene):
             graph.set_points_smoothly(
                 [axes.c2p(x, y) for x, y in zip(display_xs, display_ys)]
             )
-            graph.set_stroke(BLUE_C, width=2.1)
+            graph.set_stroke(BLUE_C, width=2.0)
             return graph
 
         def make_focus_ring():
@@ -207,7 +207,7 @@ class DrawFunctionExample(MovingCameraScene):
             zoom.animate.set_value(2.2),
             x_stretch.animate.set_value(max_x_stretch),
             focus_window.animate.set_opacity(0.25),
-            run_time=6,
+            run_time=7.5,
             rate_func=extra_smooth,
         )
 
@@ -219,7 +219,7 @@ class DrawFunctionExample(MovingCameraScene):
             self.camera.frame.animate.move_to(center_point()).scale(0.68),
             zoom.animate.set_value(4),
             x_stretch.animate.set_value(second_x_stretch),
-            run_time=5.5,
+            run_time=7,
             rate_func=extra_smooth,
         )
 
