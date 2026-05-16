@@ -10,11 +10,11 @@ class DrawFunctionExample(MovingCameraScene):
         base_x_window = 6.0
         max_x_stretch = 7.0
         second_x_stretch = 11.0
-        max_terms = 260
-        graph_samples = 8000
+        max_terms = 270
+        graph_samples = 12000
         smoothing_kernel = np.array([1, 2, 3, 4, 3, 2, 1], dtype=float)
         smoothing_kernel /= smoothing_kernel.sum()
-        focus_y_terms = 160
+        focus_y_terms = max_terms
 
         axes = Axes(
             x_range=[-3, 3, 1],
@@ -89,12 +89,15 @@ class DrawFunctionExample(MovingCameraScene):
             x_max = base_x_window / 2
             xs = np.linspace(x_min, x_max, current_samples())
             n_terms = current_terms()
-            y_anchor = weierstrass(x0, n_terms)
-            ys = weierstrass(xs, n_terms)
-            zoom_xs = x0 + (xs - x0) * current_x_stretch()
-            zoom_ys = focus_y() + (ys - y_anchor) * current_y_gain()
-            display_xs = (1 - blend) * xs + blend * zoom_xs
-            display_ys = (1 - blend) * ys + blend * zoom_ys
+
+            active_x_stretch = (1 - blend) + blend * current_x_stretch()
+            active_y_gain = (1 - blend) + blend * current_y_gain()
+            source_xs = x0 + (xs - x0) / active_x_stretch
+            source_y_anchor = weierstrass(x0, n_terms)
+            ys = weierstrass(source_xs, n_terms)
+
+            display_xs = xs
+            display_ys = focus_y() + (ys - source_y_anchor) * active_y_gain
             display_ys = smooth_values(display_ys)
 
             graph = VMobject()
