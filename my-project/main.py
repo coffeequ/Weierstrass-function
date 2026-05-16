@@ -26,11 +26,12 @@ class DrawFunctionExample(MovingCameraScene):
         labels = axes.get_axis_labels(x_label="x", y_label="y")
 
         a = 0.5
-        b = 7
+        b = 13
+        condition_bound = 1 + 3 * np.pi / 2
         holder_exponent = -np.log(a) / np.log(b)
         term_numbers = np.arange(max_terms)
         amplitudes = a ** term_numbers
-        frequencies = (b ** term_numbers) * np.pi
+        frequencies = (float(b) ** term_numbers) * np.pi
 
         def weierstrass(x, n_terms):
             x_values = np.atleast_1d(x)
@@ -134,6 +135,10 @@ class DrawFunctionExample(MovingCameraScene):
         focus_window = make_focus_window()
 
         formula = MathTex(r"W(x)=\sum_{n=0}^{\infty} a^n\cos(b^n\pi x)")
+        parameters = MathTex(
+            rf"a={a:g},\quad b={b},\quad ab={a * b:g}>1+\frac{{3\pi}}{{2}}\approx{condition_bound:.2f}",
+            font_size=34,
+        )
         title = Text(
             "\u0424\u0443\u043d\u043a\u0446\u0438\u044f \u0412\u0435\u0439\u0435\u0440\u0448\u0442\u0440\u0430\u0441\u0441\u0430",
             font="Times New Roman",
@@ -150,7 +155,7 @@ class DrawFunctionExample(MovingCameraScene):
             "Имеет фрактальную структуру: при увеличении масштаба\n"
             "мелкие детали повторяют характер всего графика.",
             "Задается рядом при 0 < a < 1, нечетном натуральном b\n"
-            "и условии ab > 1 + 3pi/2.",
+            "и условии ab > 1 + 3π/2.",
         ]
         properties = VGroup(
             *[
@@ -166,17 +171,23 @@ class DrawFunctionExample(MovingCameraScene):
         self.play(ReplacementTransform(title, formula))
         self.wait(1)
         self.play(formula.animate.scale(0.72).to_edge(UP))
-        properties_title.next_to(formula, DOWN, buff=0.45)
+        parameters.next_to(formula, DOWN, buff=0.3)
+        properties_title.next_to(parameters, DOWN, buff=0.35)
         properties.next_to(properties_title, DOWN, buff=0.35)
-        VGroup(properties_title, properties).move_to(
-            [formula.get_center()[0], VGroup(properties_title, properties).get_center()[1], 0]
+        VGroup(parameters, properties_title, properties).move_to(
+            [
+                formula.get_center()[0],
+                VGroup(parameters, properties_title, properties).get_center()[1],
+                0,
+            ]
         )
+        self.play(FadeIn(parameters, shift=DOWN * 0.2), run_time=0.8)
         self.play(FadeIn(properties_title, shift=DOWN * 0.2), run_time=0.8)
         for property_line in properties:
             self.play(FadeIn(property_line, shift=RIGHT * 0.25), run_time=0.8)
             self.wait(2.6)
         self.wait(1)
-        self.play(FadeOut(VGroup(formula, properties_title, properties)))
+        self.play(FadeOut(VGroup(formula, parameters, properties_title, properties)))
 
         self.camera.frame.scale(1.08)
 
