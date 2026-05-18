@@ -11,7 +11,7 @@ class DrawFunctionExample(MovingCameraScene):
         max_x_stretch = 7.0
         second_x_stretch = 14.0
         max_terms = 140
-        graph_samples = 2800
+        graph_samples = 3600
         smoothing_kernel = np.array(
             [1, 5, 14, 5, 1],
             dtype=float,
