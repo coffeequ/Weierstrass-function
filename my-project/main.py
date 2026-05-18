@@ -1,7 +1,7 @@
 from manim import *
 import numpy as np
 
-config.frame_rate = 30
+config.frame_rate = 60
 
 
 class DrawFunctionExample(MovingCameraScene):
@@ -13,7 +13,7 @@ class DrawFunctionExample(MovingCameraScene):
         max_terms = 140
         graph_samples = 3600
         smoothing_kernel = np.array(
-            [1, 2, 3, 5, 7, 5, 3, 2, 1],
+            [1, 4, 10, 4, 1],
             dtype=float,
         )
         smoothing_kernel /= smoothing_kernel.sum()
@@ -36,10 +36,17 @@ class DrawFunctionExample(MovingCameraScene):
         amplitudes = a ** term_numbers
         frequencies = (float(b) ** term_numbers) * np.pi
 
-        def weierstrass(x, n_terms):
+        def weierstrass(x, n_terms, sample_step=None):
             x_values = np.atleast_1d(x)
+            term_amplitudes = amplitudes[:n_terms]
+            if sample_step is not None:
+                cutoff = 0.3 * np.pi / sample_step
+                ratio = np.minimum(frequencies[:n_terms] / cutoff, 8)
+                damping = 1 / (1 + ratio ** 4)
+                term_amplitudes = term_amplitudes * damping
+
             values = (
-                amplitudes[:n_terms, None]
+                term_amplitudes[:, None]
                 * np.cos(frequencies[:n_terms, None] * x_values)
             ).sum(axis=0)
 
@@ -66,7 +73,7 @@ class DrawFunctionExample(MovingCameraScene):
             return x_stretch.get_value()
 
         def focus_blend():
-            return extra_smooth(extra_smooth(extra_smooth((current_zoom() - 1) / 3)))
+            return extra_smooth(extra_smooth((current_zoom() - 1) / 3))
 
         def focus_y():
             return weierstrass(x0, focus_y_terms)
@@ -76,7 +83,7 @@ class DrawFunctionExample(MovingCameraScene):
             return t * t * t * (t * (t * 6 - 15) + 10)
 
         def center_point():
-            return axes.c2p(x0, focus_y())
+            return axes.c2p(x0, 0)
 
         def camera_scale():
             return self.camera.frame.get_width() / config.frame_width
@@ -96,18 +103,19 @@ class DrawFunctionExample(MovingCameraScene):
             active_x_stretch = np.exp(blend * np.log(current_x_stretch()))
             active_y_gain = np.exp(blend * np.log(current_y_gain()))
             source_xs = x0 + (xs - x0) / active_x_stretch
-            source_y_anchor = weierstrass(x0, n_terms)
-            ys = weierstrass(source_xs, n_terms)
+            source_step = (x_max - x_min) / (current_samples() - 1) / active_x_stretch
+            source_y_anchor = weierstrass(x0, n_terms, source_step)
+            ys = weierstrass(source_xs, n_terms, source_step)
 
             display_xs = xs
-            display_ys = focus_y() + (ys - source_y_anchor) * active_y_gain
+            display_ys = (ys - source_y_anchor) * active_y_gain
             display_ys = smooth_values(display_ys)
 
             graph = VMobject()
             graph.set_points_smoothly(
                 [axes.c2p(x, y) for x, y in zip(display_xs, display_ys)]
             )
-            graph.set_stroke(BLUE_C, width=2.0)
+            graph.set_stroke(BLUE_C, width=1.6)
             return graph
 
         def make_focus_ring():
@@ -207,7 +215,7 @@ class DrawFunctionExample(MovingCameraScene):
             zoom.animate.set_value(2.2),
             x_stretch.animate.set_value(max_x_stretch),
             focus_window.animate.set_opacity(0.25),
-            run_time=7.5,
+            run_time=6.3,
             rate_func=extra_smooth,
         )
 
@@ -219,7 +227,7 @@ class DrawFunctionExample(MovingCameraScene):
             self.camera.frame.animate.move_to(center_point()).scale(0.68),
             zoom.animate.set_value(4),
             x_stretch.animate.set_value(second_x_stretch),
-            run_time=7,
+            run_time=5.9,
             rate_func=extra_smooth,
         )
 
