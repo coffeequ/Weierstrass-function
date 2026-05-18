@@ -9,11 +9,11 @@ class DrawFunctionExample(MovingCameraScene):
         x0 = 0.52
         base_x_window = 6.0
         max_x_stretch = 7.0
-        second_x_stretch = 11.0
+        second_x_stretch = 14.0
         max_terms = 140
-        graph_samples = 3600
+        graph_samples = 2800
         smoothing_kernel = np.array(
-            [1, 4, 10, 4, 1],
+            [1, 5, 14, 5, 1],
             dtype=float,
         )
         smoothing_kernel /= smoothing_kernel.sum()
@@ -40,7 +40,7 @@ class DrawFunctionExample(MovingCameraScene):
             x_values = np.atleast_1d(x)
             term_amplitudes = amplitudes[:n_terms]
             if sample_step is not None:
-                cutoff = 0.3 * np.pi / sample_step
+                cutoff = 0.24 * np.pi / sample_step
                 ratio = np.minimum(frequencies[:n_terms] / cutoff, 8)
                 damping = 1 / (1 + ratio ** 4)
                 term_amplitudes = term_amplitudes * damping
@@ -75,6 +75,9 @@ class DrawFunctionExample(MovingCameraScene):
         def focus_blend():
             return extra_smooth(extra_smooth((current_zoom() - 1) / 3))
 
+        def late_detail_blend():
+            return extra_smooth((current_zoom() - 2.2) / 1.8)
+
         def focus_y():
             return weierstrass(x0, focus_y_terms)
 
@@ -88,13 +91,15 @@ class DrawFunctionExample(MovingCameraScene):
         def camera_scale():
             return self.camera.frame.get_width() / config.frame_width
 
-        def smooth_values(values):
+        def smooth_values(values, strength=1):
             padding = len(smoothing_kernel) // 2
             padded = np.pad(values, padding, mode="edge")
-            return np.convolve(padded, smoothing_kernel, mode="valid")
+            smoothed = np.convolve(padded, smoothing_kernel, mode="valid")
+            return values * (1 - strength) + smoothed * strength
 
         def make_fractal_graph():
             blend = focus_blend()
+            late_blend = late_detail_blend()
             x_min = -base_x_window / 2
             x_max = base_x_window / 2
             xs = np.linspace(x_min, x_max, current_samples())
@@ -104,18 +109,19 @@ class DrawFunctionExample(MovingCameraScene):
             active_y_gain = np.exp(blend * np.log(current_y_gain()))
             source_xs = x0 + (xs - x0) / active_x_stretch
             source_step = (x_max - x_min) / (current_samples() - 1) / active_x_stretch
-            source_y_anchor = weierstrass(x0, n_terms, source_step)
-            ys = weierstrass(source_xs, n_terms, source_step)
+            detail_step = source_step / (1 + 0.35 * blend + 0.45 * late_blend)
+            source_y_anchor = weierstrass(x0, n_terms, detail_step)
+            ys = weierstrass(source_xs, n_terms, detail_step)
 
             display_xs = xs
             display_ys = (ys - source_y_anchor) * active_y_gain
-            display_ys = smooth_values(display_ys)
+            display_ys = smooth_values(display_ys, strength=1 - 0.12 * late_blend)
 
             graph = VMobject()
             graph.set_points_smoothly(
                 [axes.c2p(x, y) for x, y in zip(display_xs, display_ys)]
             )
-            graph.set_stroke(BLUE_C, width=1.6)
+            graph.set_stroke(BLUE_C, width=2.05)
             return graph
 
         def make_focus_ring():
