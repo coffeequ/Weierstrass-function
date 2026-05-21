@@ -35,19 +35,21 @@ class DrawFunctionExample(MovingCameraScene):
         term_numbers = np.arange(max_terms)
         amplitudes = a ** term_numbers
         frequencies = (float(b) ** term_numbers) * np.pi
+        graph_xs = np.linspace(-base_x_window / 2, base_x_window / 2, graph_samples)
+        graph_source_step = base_x_window / (graph_samples - 1)
 
-        def weierstrass(x, n_terms, sample_step=None):
+        def weierstrass(x, sample_step=None):
             x_values = np.atleast_1d(x)
-            term_amplitudes = amplitudes[:n_terms]
+            term_amplitudes = amplitudes
             if sample_step is not None:
                 cutoff = 0.24 * np.pi / sample_step
-                ratio = np.minimum(frequencies[:n_terms] / cutoff, 8)
+                ratio = np.minimum(frequencies / cutoff, 8)
                 damping = 1 / (1 + ratio ** 4)
                 term_amplitudes = term_amplitudes * damping
 
             values = (
                 term_amplitudes[:, None]
-                * np.cos(frequencies[:n_terms, None] * x_values)
+                * np.cos(frequencies[:, None] * x_values)
             ).sum(axis=0)
 
             if np.isscalar(x):
@@ -59,12 +61,6 @@ class DrawFunctionExample(MovingCameraScene):
 
         def current_zoom():
             return zoom.get_value()
-
-        def current_terms():
-            return max_terms
-
-        def current_samples():
-            return graph_samples
 
         def current_y_gain():
             return current_zoom() ** holder_exponent
@@ -97,20 +93,17 @@ class DrawFunctionExample(MovingCameraScene):
         def make_fractal_graph():
             blend = focus_blend()
             late_blend = late_detail_blend()
-            x_min = -base_x_window / 2
-            x_max = base_x_window / 2
-            xs = np.linspace(x_min, x_max, current_samples())
-            n_terms = current_terms()
 
             active_x_stretch = np.exp(blend * np.log(current_x_stretch()))
             active_y_gain = np.exp(blend * np.log(current_y_gain()))
-            source_xs = x0 + (xs - x0) / active_x_stretch
-            source_step = (x_max - x_min) / (current_samples() - 1) / active_x_stretch
+            source_xs = x0 + (graph_xs - x0) / active_x_stretch
+            source_step = graph_source_step / active_x_stretch
             detail_step = source_step / (1 + 0.35 * blend + 0.45 * late_blend)
-            source_y_anchor = weierstrass(x0, n_terms, detail_step)
-            ys = weierstrass(source_xs, n_terms, detail_step)
+            source_values = weierstrass(np.concatenate(([x0], source_xs)), detail_step)
+            source_y_anchor = source_values[0]
+            ys = source_values[1:]
 
-            display_xs = xs
+            display_xs = graph_xs
             display_ys = (ys - source_y_anchor) * active_y_gain
             display_ys = smooth_values(display_ys, strength=1 - 0.12 * late_blend)
 
@@ -120,12 +113,6 @@ class DrawFunctionExample(MovingCameraScene):
             )
             graph.set_stroke(BLUE_C, width=2.05)
             return graph
-
-        def make_focus_ring():
-            scale = camera_scale()
-            ring = Circle(radius=0.17 * scale, color=YELLOW, stroke_width=3)
-            ring.move_to(center_point())
-            return ring
 
         def make_focus_window():
             scale = camera_scale()
@@ -144,11 +131,15 @@ class DrawFunctionExample(MovingCameraScene):
         def resume_graph():
             graph.add_updater(lambda mob: mob.become(make_fractal_graph()))
 
+        def pause_live_graph(duration=1.5):
+            freeze_graph()
+            self.wait(duration)
+            resume_graph()
+
         graph = always_redraw(make_fractal_graph)
         dot = always_redraw(
             lambda: Dot(center_point(), color=YELLOW, radius=0.04 * camera_scale())
         )
-        focus_ring = always_redraw(make_focus_ring)
         focus_window = make_focus_window()
 
         formula = MathTex(r"W(x)=\sum_{n=0}^{\infty} a^n\cos(b^n\pi x)")
@@ -222,9 +213,7 @@ class DrawFunctionExample(MovingCameraScene):
             rate_func=extra_smooth,
         )
 
-        freeze_graph()
-        self.wait(1.5)
-        resume_graph()
+        pause_live_graph()
 
         self.play(
             self.camera.frame.animate.move_to(center_point()).scale(0.68),
@@ -234,9 +223,7 @@ class DrawFunctionExample(MovingCameraScene):
             rate_func=extra_smooth,
         )
 
-        freeze_graph()
-        self.wait(1.5)
-        resume_graph()
+        pause_live_graph()
 
         self.play(
             FadeOut(focus_window),
