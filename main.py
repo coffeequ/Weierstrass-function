@@ -5,7 +5,7 @@ config.frame_rate = 60
 
 #TODO: Подравить область выделения при фокусирования. Изменить в круге точку в центре.
 
-class DrawFunctionExample(MovingCameraScene):
+class DrawFunction(MovingCameraScene):
     def construct(self):
         x0 = 0.52
         base_x_window = 6.0
