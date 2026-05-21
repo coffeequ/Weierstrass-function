@@ -3,21 +3,21 @@ import numpy as np
 
 config.frame_rate = 60
 
+#TODO: Подравить область выделения при фокусирования. Изменить в круге точку в центре.
 
 class DrawFunctionExample(MovingCameraScene):
     def construct(self):
         x0 = 0.52
         base_x_window = 6.0
         max_x_stretch = 7.0
-        second_x_stretch = 14.0
+        second_x_stretch = 20.0
         max_terms = 140
-        graph_samples = 3600
+        graph_samples = 2800
         smoothing_kernel = np.array(
             [1, 5, 14, 5, 1],
             dtype=float,
         )
         smoothing_kernel /= smoothing_kernel.sum()
-        focus_y_terms = max_terms
 
         axes = Axes(
             x_range=[-3, 3, 1],
@@ -77,9 +77,6 @@ class DrawFunctionExample(MovingCameraScene):
 
         def late_detail_blend():
             return extra_smooth((current_zoom() - 2.2) / 1.8)
-
-        def focus_y():
-            return weierstrass(x0, focus_y_terms)
 
         def extra_smooth(t):
             t = np.clip(t, 0, 1)
